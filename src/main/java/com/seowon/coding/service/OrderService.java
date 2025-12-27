@@ -64,12 +64,7 @@ public class OrderService {
         // * 각 Product 의 재고를 수정
         // * placeOrder 메소드의 시그니처는 변경하지 않은 채 구현하세요.
 
-        Order order = new Order();
-
-        order.setCustomerName(customerName);
-        order.setCustomerEmail(customerEmail);
         List<OrderItem> orderItems = new ArrayList<>();
-
         OrderItem orderItem = new OrderItem();
         for (Long productId : productIds) {
             Product product = productRepository.findById(productId).orElseThrow(EntityNotFoundException::new);
@@ -80,10 +75,15 @@ public class OrderService {
             orderItem.setQuantity(quantity);
         }
         orderItems.add(orderItem);
-        order.setItems(orderItems);
 
-        order.markAsPending();
-        order.setOrderDate(LocalDateTime.now());
+        Order order = Order.builder()
+                .customerName(customerName)
+                .customerEmail(customerEmail)
+                .status(Order.OrderStatus.PENDING)
+                .orderDate(LocalDateTime.now())
+                .items(orderItems)
+                .totalAmount(BigDecimal.valueOf(orderItems.size()))
+                .build();
 
         this.orderRepository.save(order);
 
