@@ -72,6 +72,10 @@ public class Order {
     public void markAsCancelled() {
         this.status = OrderStatus.CANCELLED;
     }
+
+    public void markAsPending() {
+        this.status = OrderStatus.PENDING;
+    }
     
     public enum OrderStatus {
         PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED

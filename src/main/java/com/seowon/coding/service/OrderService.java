@@ -7,6 +7,7 @@ import com.seowon.coding.domain.model.Product;
 import com.seowon.coding.domain.repository.OrderRepository;
 import com.seowon.coding.domain.repository.ProcessingStatusRepository;
 import com.seowon.coding.domain.repository.ProductRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -53,8 +54,6 @@ public class OrderService {
         orderRepository.deleteById(id);
     }
 
-
-
     public Order placeOrder(String customerName, String customerEmail, List<Long> productIds, List<Integer> quantities) {
         // TODO #3: 구현 항목
         // * 주어진 고객 정보로 새 Order를 생성
@@ -64,7 +63,31 @@ public class OrderService {
         // * order 를 저장
         // * 각 Product 의 재고를 수정
         // * placeOrder 메소드의 시그니처는 변경하지 않은 채 구현하세요.
-        return null;
+
+        Order order = new Order();
+
+        order.setCustomerName(customerName);
+        order.setCustomerEmail(customerEmail);
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        OrderItem orderItem = new OrderItem();
+        for (Long productId : productIds) {
+            Product product = productRepository.findById(productId).orElseThrow(EntityNotFoundException::new);
+            orderItem.setProduct(product);
+            product.decreaseStock(1);
+        }
+        for (Integer quantity : quantities) {
+            orderItem.setQuantity(quantity);
+        }
+        orderItems.add(orderItem);
+        order.setItems(orderItems);
+
+        order.markAsPending();
+        order.setOrderDate(LocalDateTime.now());
+
+        this.orderRepository.save(order);
+
+        return order;
     }
 
     /**
